@@ -353,8 +353,13 @@ def main(
         photos_enumerator = tqdm(photos, **tqdm_kwargs)
         logger.set_tqdm(photos_enumerator)
 
+    # AJG 2020-03-09 Create a listing of all assetts in this album.
+    # TODO: maybe filter the album name a bit.
+    dumpfile = open(os.path.join(directory, "album-"+album+".list"),"w+")
+
     # pylint: disable-msg=too-many-nested-blocks
     for photo in photos_enumerator:
+
         for _ in range(constants.MAX_RETRIES):
             if skip_videos and photo.item_type != "image":
                 logger.set_tqdm_description(
@@ -389,6 +394,10 @@ def main(
                 date_path = folder_structure.format(created_date)
 
             download_dir = os.path.join(directory, date_path)
+
+            # AJG 2020-03-09 Dump out the collection information for later grokking....
+            dumpfile.write( "%s,%s,%s,%s/%s\n" % 
+                (photo.id, download_dir, photo.filename, download_dir, photo.filename))
 
             if not os.path.exists(download_dir):
                 os.makedirs(download_dir)
