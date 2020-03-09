@@ -1,7 +1,7 @@
-FROM alpine:20190408
+FROM alpine:3.11.3
 
 RUN set -xe && \
-    apk add --no-cache python3 && \
+    apk add --no-cache python3 imagemagick && \
     python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
     pip3 install --upgrade pip setuptools && \
@@ -9,20 +9,12 @@ RUN set -xe && \
     if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
     rm -r /root/.cache
 
-ADD http://www.imagemagick.org/download/ImageMagick.tar.gz /tmp/
+COPY requirements.txt /tmp/
+RUN pip install --requirement /tmp/requirements.txt
 
-ADD ./ /tmp/
-
-# Configure HEIC and icloudpd
+COPY . /tmp/
 RUN set -xe && \ 
-  echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories && \
-  apk add --no-cache x265-dev x265-libs build-base jpeg-dev libheif-dev && \
   cd /tmp/ && \
-  tar -xvf ImageMagick.tar.gz && \
-  cd ImageMagick-7.0.* && \
-  ./configure && \
-  make -j 4 && \
-  make install && \
   pip install /tmp  && \
   icloudpd --version && \
   icloud -h | head -n1
